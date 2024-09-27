@@ -1,22 +1,50 @@
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { router, Stack } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, TextInput, View, Text } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, TextInput, View, Text, FlatList } from 'react-native';
+
+import { useAuth } from '~/contexts/AuthContext';
+import { supabase } from '~/utils/supabase';
+
+dayjs.extend(relativeTime);
 
 export default function Home() {
   const [search, setSearch] = useState('');
+  const [history, setHistory] = useState([]);
+  const { user } = useAuth();
 
-  const performSearch = () => {
-    console.warn('Search: ', search);
+  const fetchHistory = () => {
+    supabase
+      .from('searches')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setHistory(data));
+  };
 
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  const performSearch = async () => {
     // save this search in database
+    const { data, error } = await supabase
+      .from('searches')
+      .insert({
+        query: search,
+        user_id: user.id,
+      })
+      .select()
+      .single();
 
-    // scrape amazon fro this query
-
-    router.push('/search');
+    if (data) {
+      router.push(`/search/${data.id}`);
+    }
   };
 
   return (
-    <>
+    <View className="flex-1 bg-white">
       <Stack.Screen options={{ title: 'Search' }} />
 
       <View className="flex-row gap-3 p-3">
@@ -30,6 +58,19 @@ export default function Home() {
           <Text>Search</Text>
         </Pressable>
       </View>
-    </>
+
+      <FlatList
+        data={history}
+        contentContainerClassName="p-3 gap-2 "
+        onRefresh={fetchHistory}
+        refreshing={false}
+        renderItem={({ item }) => (
+          <View className=" border-b border-gray-200 pb-2">
+            <Text className="text-lg font-semibold">{item.query}</Text>
+            <Text className="color-gray">{dayjs(item.created_at).fromNow()}</Text>
+          </View>
+        )}
+      />
+    </View>
   );
 }
