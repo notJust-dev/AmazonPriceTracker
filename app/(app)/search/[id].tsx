@@ -13,7 +13,7 @@ import {
   Button,
 } from 'react-native';
 
-import dummyProducts from '~/assets/search.json';
+import { Tables } from '~/types/supabase';
 import { supabase } from '~/utils/supabase';
 
 dayjs.extend(relativeTime);
@@ -22,8 +22,8 @@ dayjs.extend(relativeTime);
 
 export default function SearchResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [search, setSearch] = useState();
-  const [products, setProducts] = useState([]);
+  const [search, setSearch] = useState<Tables<'searches'> | null>(null);
+  const [products, setProducts] = useState<Tables<'products'>[]>([]);
 
   useEffect(() => {
     fetchSearch();
@@ -46,7 +46,7 @@ export default function SearchResultScreen() {
       .eq('search_id', id)
       .then(({ data, error }) => {
         console.log(data, error);
-        setProducts(data?.map((d) => d.products));
+        setProducts(data?.map((d) => d.products).filter((p) => !!p) as Tables<'products'>[]);
       });
   };
 
