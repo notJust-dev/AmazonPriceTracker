@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { useLocalSearchParams } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Text,
@@ -97,15 +97,17 @@ export default function SearchResultScreen() {
         contentContainerClassName="gap-2 p-2"
         keyExtractor={(item) => item.asin}
         renderItem={({ item }) => (
-          <Pressable
-            onPress={() => Linking.openURL(item.url)}
-            className="flex-row gap-2 bg-white p-3">
-            <Image source={{ uri: item.image }} className="h-20 w-20" resizeMode="contain" />
-            <Text className="flex-1" numberOfLines={4}>
-              {item.name}
-            </Text>
-            <Text>$ {item.final_price}</Text>
-          </Pressable>
+          <Link href={`/product/${item.asin}`} asChild>
+            <Pressable
+              // onPress={() => Linking.openURL(item.url)}
+              className="flex-row gap-2 bg-white p-3">
+              <Image source={{ uri: item.image }} className="h-20 w-20" resizeMode="contain" />
+              <Text className="flex-1" numberOfLines={4}>
+                {item.name}
+              </Text>
+              <Text>$ {item.final_price}</Text>
+            </Pressable>
+          </Link>
         )}
       />
     </View>
