@@ -64,6 +64,35 @@ export type Database = {
           },
         ]
       }
+      product_snapshot: {
+        Row: {
+          asin: string
+          created_at: string
+          final_price: number
+          id: number
+        }
+        Insert: {
+          asin: string
+          created_at?: string
+          final_price: number
+          id?: number
+        }
+        Update: {
+          asin?: string
+          created_at?: string
+          final_price?: number
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_snapshot_asin_fkey"
+            columns: ["asin"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["asin"]
+          },
+        ]
+      }
       products: {
         Row: {
           asin: string
