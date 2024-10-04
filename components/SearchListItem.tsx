@@ -14,7 +14,7 @@ export default function SearchListItem({ search }: { search: Tables<'searches'> 
       <Pressable className="flex-row items-center justify-between border-b border-gray-200 pb-2">
         <View>
           <Text className="text-lg font-semibold">{search.query}</Text>
-          <Text className="color-gray">{dayjs(search.created_at).fromNow()}</Text>
+          <Text className="color-gray">Scraped {dayjs(search.last_scraped_at).fromNow()}</Text>
         </View>
         <Octicons name={search.is_tracked ? 'bell-fill' : 'bell'} size={22} color="dimgray" />
       </Pressable>

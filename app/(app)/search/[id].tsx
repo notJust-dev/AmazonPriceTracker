@@ -102,7 +102,7 @@ export default function SearchResultScreen() {
       <View className="m-2 flex-row items-center justify-between gap-2 rounded bg-white p-4 shadow-sm">
         <View>
           <Text className="text-xl font-semibold">{search.query}</Text>
-          <Text>{dayjs(search.created_at).fromNow()}</Text>
+          <Text>Scraped {dayjs(search.last_scraped_at).fromNow()}</Text>
           <Text>{search.status}</Text>
         </View>
         <Octicons
