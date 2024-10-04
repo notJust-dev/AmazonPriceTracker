@@ -1,7 +1,7 @@
 select
   cron.schedule(
-    'invoke-scraper-every-3-minute',
-    '*/3 * * * *',
+    'invoke-scraper-cron',
+    '0 0 * * *',
     $$
     select
       net.http_post(
