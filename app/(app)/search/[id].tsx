@@ -21,18 +21,25 @@ dayjs.extend(relativeTime);
 // const products = dummyProducts.slice(0, 20);
 
 export default function SearchResultScreen() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const [search, setSearch] = useState();
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
+    fetchSearch();
+    fetchProducts();
+  }, [id]);
+
+  const fetchSearch = () => {
     supabase
       .from('searches')
       .select('*')
       .eq('id', id)
       .single()
       .then(({ data }) => setSearch(data));
+  };
 
+  const fetchProducts = () => {
     supabase
       .from('product_search')
       .select('*, products(*)')
@@ -41,7 +48,29 @@ export default function SearchResultScreen() {
         console.log(data, error);
         setProducts(data?.map((d) => d.products));
       });
-  }, [id]);
+  };
+
+  useEffect(() => {
+    // Listen to inserts
+    const subscription = supabase
+      .channel('supabase_realtime')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'searches' },
+        (payload) => {
+          console.log(JSON.stringify(payload.new, null, 2));
+          if (payload.new?.id === parseInt(id, 10)) {
+            setSearch(payload.new);
+            fetchProducts();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const startScraping = async () => {
     const { data, error } = await supabase.functions.invoke('scrape-start', {
@@ -71,7 +100,7 @@ export default function SearchResultScreen() {
           <Pressable
             onPress={() => Linking.openURL(item.url)}
             className="flex-row gap-2 bg-white p-3">
-            <Image source={{ uri: item.image }} className="h-20 w-20" />
+            <Image source={{ uri: item.image }} className="h-20 w-20" resizeMode="contain" />
             <Text className="flex-1" numberOfLines={4}>
               {item.name}
             </Text>
