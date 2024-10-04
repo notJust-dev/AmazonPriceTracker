@@ -19,6 +19,10 @@ export default function RootLayout() {
           name="(app)/search/[id]"
           options={{ title: 'Search products', headerBackTitleVisible: false }}
         />
+        <Stack.Screen
+          name="(app)/product/[asin]"
+          options={{ title: 'Product details', headerBackTitleVisible: false }}
+        />
       </Stack>
     </AuthContextProvider>
   );

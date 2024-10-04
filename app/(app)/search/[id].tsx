@@ -93,6 +93,58 @@ export default function SearchResultScreen() {
     setSearch(data);
   };
 
+  const getProductLastPrices = async (product) => {
+    const { data, error } = await supabase
+      .from('product_snapshot')
+      .select('*')
+      .eq('asin', product.asin)
+      .order('created_at', { ascending: false })
+      .limit(2);
+    console.log(error);
+    return {
+      ...product,
+      snapshots: data,
+    };
+  };
+
+  const priceDrops = async () => {
+    const { data: productSearch, error: productSearchError } = await supabase
+      .from('product_search')
+      .select('*, products(*)')
+      .eq('search_id', id);
+
+    if (!productSearch) {
+      return;
+    }
+    const products = await Promise.all(
+      productSearch.map((ps) => getProductLastPrices(ps.products))
+    );
+
+    const priceDrops = products.filter(
+      (product) =>
+        product.snapshots.length === 2 &&
+        product.snapshots[0].final_price < product.snapshots[1].final_price
+    );
+
+    const message = `
+      The are ${priceDrops.length} price drops in your search!
+
+      ${priceDrops.map(
+        (product) => `
+        ${product.name}
+        ${product.url}
+        From $${product.snapshots[1].final_price} dropped to ${product.snapshots[0].final_price}
+      `
+      )}
+    `;
+
+    console.log(message);
+
+    // const newProducts = products.filter((product) => product.snapshots.length <= 1);
+    // console.log('new: ', JSON.stringify(newProducts, null, 2));
+    console.log('drops: ', JSON.stringify(priceDrops, null, 2));
+  };
+
   if (!search) {
     return <ActivityIndicator />;
   }
@@ -113,6 +165,7 @@ export default function SearchResultScreen() {
         />
       </View>
       <Button title="Start scraping" onPress={startScraping} />
+      <Button title="Test new price drops" onPress={priceDrops} />
 
       <FlatList
         data={products}
