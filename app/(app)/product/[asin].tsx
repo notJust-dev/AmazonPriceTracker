@@ -51,11 +51,11 @@ export default function ProductDetailsScreen() {
               <Text>$ {product.final_price}</Text>
             </View>
 
-            {product.url && (
+            {!!product.url && (
               <Button
                 className="m-3"
                 title="Open on Amazon"
-                onPress={() => Linking.openURL(product.url)}
+                onPress={() => Linking.openURL(product.url || '')}
               />
             )}
 
